@@ -160,12 +160,12 @@ void PushParamBar(Push& p, uint8_t c, KeyValuePair_s* kvp) {
     int32_t val = (kvp->ipvp.PEx->value) >> 20;
     if(min>=0) {
         val = (val*128) / (max - min);
-        //PushDbgLog("PushUnipolarBar %s,%i,%i,%i",txt, val, min,max);
+       // PushDbgLog("PushUnipolarBar %s,%i,%i,%i",txt, val, min,max);
         PushUnipolarBar(p,2,c,val);
     } else {
         uint32_t range = max-min;
         val = ((val + (range/2)) * 128) / range;
-        //PushDbgLog("PushBipolarBar %s,%i,%i,%i %i",txt, val, min,max, max-min);
+       // PushDbgLog("PushBipolarBar %s,%i,%i,%i %i",txt, val, min,max, max-min);
         PushBipolarBar(p,2,c,val);
     }
 }

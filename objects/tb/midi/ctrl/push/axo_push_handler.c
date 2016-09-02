@@ -1,16 +1,16 @@
 
 // minimum time between sending, expressed in krate time
-// 3000hz , so 3 * ms 
-#define MIN_TIME (0 * 100) 
+// 3000hz , so 3 * ms
+#define MIN_TIME (0 * 100)
 #define QS 10
 
-struct PushMidiQ {
+struct PushMidiMsgQueue {
     volatile uint8_t read,write;
     uint8_t data[QS][3];
 };
 
 
-static PushMidiQ pushInQ;
+static PushMidiMsgQueue pendingMidiMsgs;
 
 
 enum BtnColour  {
@@ -24,12 +24,12 @@ enum BtnColour  {
 };
 
 void PushInitHandler(Push& p) {
-    pushInQ.read=pushInQ.write=0; 
+    pendingMidiMsgs.read=pendingMidiMsgs.write=0;
     p._shiftHeld=false;
     p._selectHeld=false;
     PushClearUpperPads(p);
     PushClearLowerPads(p);
-   
+
     MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,CC_VOLUME,BtnClr_Lit);
     MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,CC_DEVICE,BtnClr_Lit);
     MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,CC_BROWSE,BtnClr_Lit);
@@ -61,18 +61,18 @@ void PushInitHandler(Push& p) {
 void PushMidiInMsgHandler(Push& p,midi_device_t dev, uint8_t port, uint8_t b0, uint8_t b1, uint8_t b2) {
     if(dev != p._in_dev || port != p._in_port) return ;
 
-    //PushDbgLog("PushMidiHandler %i,%i,%i",b0,b1,b2);
+    PushDbgLog("PushMidiHandler %i,%i,%i",b0,b1,b2);
 
     uint8_t data1= b1;
     uint8_t data2= b2;
-    uint8_t next  = (pushInQ.write + 1 ) % QS;
-    if(next==pushInQ.read) {
+    uint8_t next  = (pendingMidiMsgs.write + 1 ) % QS;
+    if(next==pendingMidiMsgs.read) {
         PushDbgLog("Push Midi Q overflow");
     }
-    pushInQ.data[next][0]=b0;
-    pushInQ.data[next][1]=b1;
-    pushInQ.data[next][2]=b2;
-    pushInQ.write = next;
+    pendingMidiMsgs.data[next][0]=b0;
+    pendingMidiMsgs.data[next][1]=b1;
+    pendingMidiMsgs.data[next][2]=b2;
+    pendingMidiMsgs.write = next;
 }
 
 void ProcessMidi(Push& p, uint8_t b0, uint8_t data1, uint8_t data2) {
@@ -178,9 +178,9 @@ void ProcessMidi(Push& p, uint8_t b0, uint8_t data1, uint8_t data2) {
 
 void PushControlRateHandler(Push& p) {
     p._time++;
-    while(pushInQ.read!=pushInQ.write) {
-        pushInQ.read = (pushInQ.read + 1 ) % QS;
-        ProcessMidi(p,pushInQ.data[pushInQ.read][0],pushInQ.data[pushInQ.read][1],pushInQ.data[pushInQ.read][2]);
+    while(pendingMidiMsgs.read!=pendingMidiMsgs.write) {
+        pendingMidiMsgs.read = (pendingMidiMsgs.read + 1 ) % QS;
+        ProcessMidi(p,pendingMidiMsgs.data[pendingMidiMsgs.read][0],pendingMidiMsgs.data[pendingMidiMsgs.read][1],pendingMidiMsgs.data[pendingMidiMsgs.read][2]);
     }
 
     if(p._time >= MIN_TIME) {
@@ -190,3 +190,19 @@ void PushControlRateHandler(Push& p) {
     }
 }
 
+void PushClockTrigger(Push& p)
+{
+	static uint32_t clk_24ppq = 0;
+
+	clk_24ppq++;
+
+	return;
+
+	if (clk_24ppq % 24 == 0) {
+		PushDbgLog("clock %i", clk_24ppq);
+	}
+
+
+
+
+}

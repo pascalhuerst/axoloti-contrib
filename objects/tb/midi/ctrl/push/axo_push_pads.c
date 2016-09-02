@@ -1,5 +1,5 @@
 
-    
+
 void PushInitPads(Push& p) {
     for(int r=0;r<8;r++) {
         for(int c=0;c<8;c++) {
@@ -14,14 +14,14 @@ void PushClearUpperPads(Push& p) {
     for(int i=CC_UPPER_PAD_START; i <= CC_UPPER_PAD_END;i++) {
         MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,i,PAD_NOTE_OFF_CLR);
     }
-    
+
 }
 
 void PushClearLowerPads(Push& p) {
     for(int i=CC_LOWER_PAD_START; i <= CC_LOWER_PAD_END;i++) {
         MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,i,PAD_NOTE_OFF_CLR);
     }
-    
+
 }
 
 void PushSetPad(Push& p, uint8_t r, uint8_t c ,uint8_t colour) {

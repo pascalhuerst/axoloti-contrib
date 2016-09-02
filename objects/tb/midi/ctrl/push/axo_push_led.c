@@ -87,7 +87,7 @@ void PushSetBlock(Push& p,uint8_t r, uint8_t b, const char* txt, uint8_t len) {
 void PushSetCell(Push& p,uint8_t r, uint8_t c, const char* txt, uint8_t len) {
     if(len>CELL_LEN) len=CELL_LEN;
     int offset = (c/2) * BLOCK_LEN + ((c % 2) * (CELL_LEN + 1));
-    //PushDbgLog("PushSetCell  %i, %s, %i, %i, %i",len, txt, r, c,offset);
+    PushDbgLog("PushSetCell  %i, %s, %i, %i, %i",len, txt, r, c,offset);
     memcpy(TXT_START+LED(r)+offset,txt,len);
     memset(TXT_START+LED(r)+len+offset,CHAR_SPACE,CELL_LEN-len);
 
@@ -106,7 +106,7 @@ void PushUpdateLed(Push& p) {
             int o = p._activeLed[i];
             int n = o == 0? 1 : 0;
             PushCopyRow(p,i,n,o);
-            //PushDbgLog("PushUpdateLed, sending %i,%i",i,o);
+            PushDbgLog("PushUpdateLed, sending %i,%i",i,o);
             MidiSendSysEx(p._out_dev,p._out_port,p._led[o][i],SYSEX_LEN);
             p._activeLed[i] = n;
             p._isDirtyLed[i] = false;
@@ -119,14 +119,14 @@ void PushUpdateLed(Push& p) {
 
 void PushUnipolarBar(Push& p, uint8_t r, uint8_t c, uint8_t v) {
     // each character has 2 bars e.g. == |= ||
-    //PushDbgLog("write to %i", p._activeLed[r]);
+    PushDbgLog("write to %i", p._activeLed[r]);
     char buf[8];
     memset(buf,BARS_NONE,8);
     int16_t nb = ((v+1) * CELL_LEN * 2) / 128;
     int8_t fb = nb / 2;
     memset(buf,BARS_TWO,fb);
     if(nb%2) buf[fb] = BARS_ONE_L;
-    //PushDbgLog("PushUniBar, %i, %i %i,%i,%i",r, c, v,nb,fb);
+    PushDbgLog("PushUniBar, %i, %i %i,%i,%i",r, c, v,nb,fb);
     PushSetCell(p,r,c,buf,8);
 }
 

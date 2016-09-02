@@ -92,11 +92,11 @@ void PushHandleSessionMode(Push& p, uint8_t status, uint8_t data1,uint8_t data2)
 void PushDisplaySession(Push& p, KeyValuePair_s* parent) {
     uint8_t devParamPos = p._sessionSeqPos;
     uint8_t numobjs = PushNumSeqObjects(parent);
-    
+
     PushClearRow(p,0);
     PushClearRow(p,1);
     PushClearRow(p,2);
-    
+
     PushLockLedRow(p,3,true);
     char buf[PUSHSEQMAXBUF];
     for(uint8_t i = 0; i<LED_CELLS;i++) {
@@ -105,13 +105,13 @@ void PushDisplaySession(Push& p, KeyValuePair_s* parent) {
             PushSeqName(buf,kvp);
             uint8_t len = strlen(buf);
             PushSetCell(p,3 ,i ,buf,len);
-            
+
         } else {
             PushSetCell(p,3 ,i ,"",0);
         }
     }
     PushLockLedRow(p,3,false);
-    
+
     // for some bizzare reason moving this into above look crashes axo
     // looks like an issue with inlining
     for(uint8_t i = 0; i<LED_CELLS;i++) {
