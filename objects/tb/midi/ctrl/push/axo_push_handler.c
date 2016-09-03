@@ -97,12 +97,14 @@ void ProcessMidi(Push& p, uint8_t b0, uint8_t data1, uint8_t data2) {
 			    uint8_t r = (bbb & 0xF8) >> 3;
 			    uint8_t c = bbb & 0x07;
 
-				if (PushGetStep(p, r, c)) {
-					PushDisableStep(p, r, c);
-					 PushSetPad(p, r, c, PAD_UP_CLR);
+				PushDbgLog("(%i|%i)", c, Pad2Seq(r));
+
+				if (PushGetStep(p, c, Pad2Seq(r))) {
+					PushDisableStep(p, c, Pad2Seq(r));
+					PushSetPad(p, r, c, PAD_OFF_CLR);
 				} else {
-					PushEnableStep(p, r, c);
-					 PushSetPad(p, r, c, PAD_OFF_CLR);
+					PushEnableStep(p, c, Pad2Seq(r));
+					PushSetPad(p, r, c, PAD_UP_CLR);
 
 			}
 
@@ -219,36 +221,58 @@ void PushControlRateHandler(Push& p) {
 }
 
 // For these: seqNr 0..7 / stepNr 0..7
-void PushEnableStep(Push& p, uint8_t seqNr, uint8_t stepNr)
+void PushEnableStep(Push& p, uint8_t stepNr, uint8_t seqNr)
 {
-	p.sequencer[seqNr] |= (1 << (7-stepNr));
+	p.sequencer[seqNr] |= (1 << stepNr);
 	PushDbgLog("en: %02X", p.sequencer[seqNr]);
 }
 
-void PushDisableStep(Push& p, uint8_t seqNr, uint8_t stepNr)
+void PushDisableStep(Push& p, uint8_t stepNr, uint8_t seqNr)
 {
-	p.sequencer[seqNr] &= ~(1 << (7-stepNr));
+	p.sequencer[seqNr] &= ~(1 << stepNr);
 	PushDbgLog("dis: %02X", p.sequencer[seqNr]);
 }
 
-bool PushGetStep(Push& p, uint8_t seqNr, uint8_t stepNr)
+bool PushGetStep(Push& p, uint8_t stepNr, uint8_t seqNr)
 {
-	return (p.sequencer[seqNr] & (1 << (7-stepNr)) == true);
+	return (p.sequencer[seqNr] & (1 << stepNr));
 }
 
-bool PushToggleStep(Push& p, uint8_t seqNr, uint8_t stepNr)
+bool PushToggleStep(Push& p, uint8_t stepNr, uint8_t seqNr)
 {
-	if (PushGetStep(p, seqNr, stepNr)) {
-		PushDisableStep(p, seqNr, stepNr);
+	if (PushGetStep(p, stepNr, seqNr)) {
+		PushDisableStep(p, stepNr, seqNr);
 		return false;
 	}
 
-	PushEnableStep(p, seqNr, stepNr);
+	PushEnableStep(p, stepNr, seqNr);
 	return true;
 }
 
+void PushSeqTickHandler(Push& p)
+{
+	for (uint8_t i=0; i<16; i++) {
+		p.sequencer[i].clk_24ppq_cnt++;
+		p.sequencer[i].clk_24ppq_cnt %= 384;
 
+		if (p.sequencer[i].clk_24ppq_cnt % p.sequencer[i].ticks_per_step == 0) {
+			p.sequencer[i].last_step = p.sequencer[i].step;
+			p.sequencer[i].step++;
+			p.sequencer[i].step %= step_cnt;
+		}
+	}
+}
 
+void PushSeqSetStep(Push& p, uint8_t seq, uint8_t step, uint8_t velocity)
+{
+	p.sequence[seq].velocity[step] = velocity;
+}
+
+// Returns velocity
+uint8_t PushSeqGetStepVelocity(Push& p, uint8_t seq, uint8_t step)
+{
+	return p.sequence[seq].velocity[step];
+}
 
 void PushClockTrigger(Push& p)
 {
@@ -265,13 +289,20 @@ void PushClockTrigger(Push& p)
 		p.step++;
 		p.step %= 8;
 
+		uint8_t onColor, offColor = 0;
+
 		for (uint8_t i=0; i<8; i++) {
-			PushSetPad(p, Seq2Pad(i), Step2Pad(p.step), PAD_NOTE_IN_KEY_CLR);
-			PushSetPad(p, Seq2Pad(i), Step2Pad(p.lastStep), PAD_OFF_CLR);
+			if (PushGetStep(p, p.lastStep, i)) {
+				onColor = p.color;
+				offColor = 30;
+			} else {
+				onColor = p.color;
+				offColor = 0;
+			}
+			PushSetPad(p, Seq2Pad(i), Step2Pad(p.step), onColor);
+			PushSetPad(p, Seq2Pad(i), Step2Pad(p.lastStep), offColor);
 		}
 		PushUpdatePads(p);
-
-		//PushUpdateLed(p);
 	}
 }
 
@@ -289,13 +320,26 @@ void PushStopTrigger(Push& p)
 	p.step = 0;
 	p.running = false;
 	PushClearPads(p);
-	PushUpdateLed(p);
+	PushDrawSteps(p);
 	PushUpdatePads(p);
 }
 
 
+bool PushDrawSteps(Push& p)
+{
+	for (uint8_t x=0; x<8; x++) {
+		for (uint8_t y=0; y<8; y++) {
+			if (PushGetStep(p, x, y)) {
+				PushSetPad(p, Seq2Pad(y), Step2Pad(x), p.color);
+			}
+		}
+	}
+}
 
 
+void PushSetColor(Push& p, uint8_t c) {
+	p.color = c;
+}
 
 
 

@@ -21,7 +21,7 @@ extern void LogTextMessage(const char* format, ...);
 
 #define Step2Pad(x) (x)
 #define Seq2Pad(x) (7-x)
-
+#define Pad2Seq(x) (7-x)
 
 typedef enum {
     Push_DeviceMode,
@@ -35,6 +35,22 @@ typedef enum {
     Push_PlayMode,
     Push_SequencerMode
 } PushPadMode;
+
+
+
+
+
+struct SeqParams {
+	uint8_t velocity[64];	// 0: Step off, others velocity
+	uint16_t clk_24ppq_cnt;	// 0..383 -> 1 Bar of 24ppq ticks
+	uint8_t step_cnt;	// How many steps does this seq have
+	uint8_t swing;		// Swing amount, delays somehow the playback
+	uint8_t ticks_per_step; // Count of sticks equals 1 step inc
+	uint8_t step;		// 0..63
+	uint8_t last_step;	// Step bevor the current one
+	uint8_t note;		// Note value thats sent on trigger
+};
+
 
 struct Push {
     PushMainMode _mode;
@@ -83,6 +99,11 @@ struct Push {
     uint8_t _sessionSeqPos; // current browser offset
     uint8_t _sessionSeqIdx; // current selected seq
 
+    // Seq. V2
+    SeqParams sequencer[8];
+
+
+
     //sequencer
     bool running;
     uint8_t clk_24ppq;
@@ -91,7 +112,7 @@ struct Push {
     uint8_t stepsize;
     uint8_t step;
     uint8_t lastStep;
-
+    uint8_t color;
 };
 
 

@@ -4,7 +4,9 @@
       <author>Mark Harris</author>
       <license>GPL</license>
       <helpPatch>push.axh</helpPatch>
-      <inlets/>
+      <inlets>
+         <int32 name="color"/>
+      </inlets>
       <outlets/>
       <displays/>
       <params/>
@@ -95,7 +97,9 @@ __attribute__ (( always_inline )) __STATIC_INLINE int midi_device_test( midi_dev
       <code.init><![CDATA[PushInit(_push); 
 PushDevice(_push,(midi_device_t) attr_device);
 PushNoteOutput(_push,(midi_device_t) attr_output);]]></code.init>
-      <code.krate><![CDATA[PushControlRateHandler(_push);]]></code.krate>
+      <code.krate><![CDATA[PushControlRateHandler(_push);
+
+PushSetColor(_push, inlet_color);]]></code.krate>
       <code.midihandler><![CDATA[if (midi_device_test(dev, port, attr_clockdevice)) {
 	if (status == MIDI_TIMING_CLOCK) {
               PushClockTrigger(_push);
