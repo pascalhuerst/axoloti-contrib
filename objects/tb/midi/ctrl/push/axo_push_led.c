@@ -106,7 +106,7 @@ void PushUpdateLed(Push& p) {
             int o = p._activeLed[i];
             int n = o == 0? 1 : 0;
             PushCopyRow(p,i,n,o);
-            PushDbgLog("PushUpdateLed, sending %i,%i",i,o);
+           // PushDbgLog("PushUpdateLed, sending %i,%i",i,o);
             MidiSendSysEx(p._out_dev,p._out_port,p._led[o][i],SYSEX_LEN);
             p._activeLed[i] = n;
             p._isDirtyLed[i] = false;

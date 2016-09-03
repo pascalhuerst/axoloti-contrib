@@ -46,3 +46,12 @@
     void PushUpdateLed(Push& p) PFX;
     void PushUpdatePads(Push& p)PFX;
     void PushUpdateParamValue(Push& p, KeyValuePair_s* parent, uint8_t encoder, int8_t vel) PFX;
+    void PushClockTrigger(Push& p) PFX;
+    void PushStartTrigger(Push& p) PFX;
+    void PushStopTrigger(Push& p) PFX;
+
+    void PushEnableStep(Push& p, uint8_t seqNr, uint8_t stepNr);
+    void PushDisableStep(Push& p, uint8_t seqNr, uint8_t stepNr);
+    bool PushGetStep(Push& p, uint8_t seqNr, uint8_t stepNr);
+    bool PushToggleStep(Push& p, uint8_t seqNr, uint8_t stepNr);
+

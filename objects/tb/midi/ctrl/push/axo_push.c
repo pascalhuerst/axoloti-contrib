@@ -11,7 +11,7 @@ void PushInit(Push& p) {
 
     p._deviceParamPos = 0;
     p._mode = Push_VolumeMode;
-    p._padMode = Push_PlayMode;
+    p._padMode = Push_SequencerMode;
     p._scaleIdx = 0;
     p._octave = 2;
     p._chromatic = true;
@@ -25,6 +25,15 @@ void PushInit(Push& p) {
     PushInitHandler(p);
     PushInitDisplayParams(p);
     PushInitSession(p);
+
+    p.running = false;
+    p.clk_24ppq = 0;
+    p.clk_1ppq = 0;
+    memset(p.sequencer, 0, 8);
+    p.stepsize = 16;
+    p.step = 1;
+    p.lastStep = 8;
+
 }
 
 void PushDevice(Push& p,midi_device_t d,int port) {

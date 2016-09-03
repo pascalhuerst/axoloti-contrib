@@ -4,9 +4,7 @@
       <author>Mark Harris</author>
       <license>GPL</license>
       <helpPatch>push.axh</helpPatch>
-      <inlets>
-         <bool32.rising name="clk"/>
-      </inlets>
+      <inlets/>
       <outlets/>
       <displays/>
       <params/>
@@ -55,28 +53,60 @@
                <string>MIDI_DEVICE_USB_DEVICE, 1</string>
             </CEntries>
          </combo>
+         <combo name="clockdevice">
+            <MenuEntries>
+               <string>omni</string>
+               <string>din</string>
+               <string>usb host port 1</string>
+               <string>usb host port 2</string>
+               <string>usb host port 3</string>
+               <string>usb host port 4</string>
+               <string>internal port 1</string>
+               <string>internal port 2</string>
+               <string>usb device port 1</string>
+            </MenuEntries>
+            <CEntries>
+               <string>MIDI_DEVICE_OMNI, 0</string>
+               <string>MIDI_DEVICE_DIN, 1</string>
+               <string>MIDI_DEVICE_USB_HOST, 1</string>
+               <string>MIDI_DEVICE_USB_HOST, 2</string>
+               <string>MIDI_DEVICE_USB_HOST, 3</string>
+               <string>MIDI_DEVICE_USB_HOST, 4</string>
+               <string>MIDI_DEVICE_INTERNAL, 1</string>
+               <string>MIDI_DEVICE_INTERNAL, 2</string>
+               <string>MIDI_DEVICE_USB_DEVICE, 1</string>
+            </CEntries>
+         </combo>
          <spinner name="channel" MinValue="1" MaxValue="16" DefaultValue="0"/>
       </attribs>
       <includes>
          <include>./push/axo_push.h</include>
       </includes>
-      <code.declaration><![CDATA[bool last_clock;
+      <code.declaration><![CDATA[Push _push;
 
-
-Push _push;]]></code.declaration>
+__attribute__ (( always_inline )) __STATIC_INLINE int midi_device_test( midi_device_t dev, uint8_t port, int selected_dev, uint8_t selected_port )
+      {
+        if(    (selected_dev == MIDI_DEVICE_OMNI)
+            || (selected_dev == dev && selected_port == port)
+            )
+          return 1;
+        return 0;
+      }]]></code.declaration>
       <code.init><![CDATA[PushInit(_push); 
 PushDevice(_push,(midi_device_t) attr_device);
-PushNoteOutput(_push,(midi_device_t) attr_output);
-last_clock = 0;]]></code.init>
-      <code.krate><![CDATA[if (inlet_clk && !last_clock) {
-
-	PushClockTrigger(_push);
-	last_clock = 1;
-} else if (!inlet_clk && last_clock) {
-	last_clock = 0;
-}
-
-//PushControlRateHandler(_push);]]></code.krate>
-      <code.midihandler><![CDATA[PushMidiInMsgHandler(_push,dev,port,status,data1,data2);]]></code.midihandler>
+PushNoteOutput(_push,(midi_device_t) attr_output);]]></code.init>
+      <code.krate><![CDATA[PushControlRateHandler(_push);]]></code.krate>
+      <code.midihandler><![CDATA[if (midi_device_test(dev, port, attr_clockdevice)) {
+	if (status == MIDI_TIMING_CLOCK) {
+              PushClockTrigger(_push);
+     } else if (status == MIDI_START) {
+              PushStartTrigger(_push);
+     } else if (status == MIDI_STOP) {
+              PushStopTrigger(_push);
+     }
+} else if (midi_device_test(dev, port, attr_device)) {
+	//LogTextMessage("ddd");
+	PushMidiInMsgHandler(_push,dev,port,status,data1,data2);
+}]]></code.midihandler>
    </obj.normal>
 </objdefs>

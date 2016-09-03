@@ -48,11 +48,12 @@ void PushUpdatePads(Push& p){
             for(int c=0;c<8;c++) {
                 if ( p._dirtyPads[r] & (1 << c)) {
 //                    PushDbgLog("pads %i",p._pads[r][c]);
-                    MidiSend3(p._out_dev,p._out_port,MIDI_NOTE_ON,(r*8) + c + NOTE_PAD_START,p._pads[r][c]);
+                    MidiSend3(p._out_dev, p. _out_port, MIDI_NOTE_ON, (r*8) + c + NOTE_PAD_START, p._pads[r][c]);
                 }
             }
             p._dirtyPads[r] = 0;
-            return; // only send one row at a time, i.e. throttle
+	//Pascal: If this is needed, make another function for step sequencer, that updates columns
+         //   return; // only send one row at a time, i.e. throttle
         }
     }
 }

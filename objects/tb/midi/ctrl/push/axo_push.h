@@ -12,12 +12,16 @@ extern void LogTextMessage(const char* format, ...);
 #endif
 
 
-#define PFX __attribute__((noinline)) 
+#define PFX __attribute__((noinline))
 
 
 #define LED_ROWS 4
 #define LED_BLOCKS 4
 #define LED_CELLS 2 * LED_BLOCKS
+
+#define Step2Pad(x) (x)
+#define Seq2Pad(x) (7-x)
+
 
 typedef enum {
     Push_DeviceMode,
@@ -49,14 +53,14 @@ struct Push {
 
     // display
 	unsigned char _led[2][LED_ROWS][9+68];
-	uint8_t _activeLed[4];  
+	uint8_t _activeLed[4];
 	bool    _isDirtyLed[LED_ROWS];
 	bool    _lockLed[LED_ROWS];
 
     // pads
 	uint8_t _pads[8][8];
 	uint8_t _dirtyPads[8]; // 8 binary rows
-    
+
     // throttle - increases each krate, used for display
     uint32_t _time;
 
@@ -71,13 +75,23 @@ struct Push {
 
     bool    _shiftHeld;
     bool    _selectHeld;
-    
+
     // parameter info
     uint8_t _deviceParamPos; // current browser offset
     uint8_t _displayParamBars;
 
     uint8_t _sessionSeqPos; // current browser offset
     uint8_t _sessionSeqIdx; // current selected seq
+
+    //sequencer
+    bool running;
+    uint8_t clk_24ppq;
+    uint8_t clk_1ppq;
+    uint8_t sequencer[8];
+    uint8_t stepsize;
+    uint8_t step;
+    uint8_t lastStep;
+
 };
 
 
@@ -156,7 +170,7 @@ extern struct KeyValuePair *ObjectKvps[];
 
 #include <ui.h>
 
-// generated with 
+// generated with
 // ctags -x --c-kinds=f *.c | awk '{$1=$2=$3=$4="";print $0}' | sed 's/{/PFX;/' > axo_push_funcs.h
 #include "./axo_push_funcs.h"
 
