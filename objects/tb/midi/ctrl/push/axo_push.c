@@ -27,13 +27,7 @@ void PushInit(Push& p) {
     PushInitSession(p);
 
     p.running = false;
-    p.clk_24ppq = 0;
-    p.clk_1ppq = 0;
-    memset(p.sequencer, 0, 8);
-    p.stepsize = 16;
-    p.step = 1;
-    p.lastStep = 8;
-
+    p.color = 0;
 }
 
 void PushDevice(Push& p,midi_device_t d,int port) {

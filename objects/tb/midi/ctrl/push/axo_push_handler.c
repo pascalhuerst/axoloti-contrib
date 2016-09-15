@@ -92,28 +92,23 @@ void ProcessMidi(Push& p, uint8_t b0, uint8_t data1, uint8_t data2) {
                 } else if (p._padMode==Push_SequencerMode && data1>=NOTE_PAD_START && data1 <=NOTE_PAD_END) {
 
 			if (status == MIDI_NOTE_ON) {
+				uint8_t bbb = data1 - NOTE_PAD_START;
+				uint8_t r = (bbb & 0xF8) >> 3;
+				uint8_t c = bbb & 0x07;
+				uint8_t velocity = 50;
 
-			    uint8_t bbb = data1 - NOTE_PAD_START;
-			    uint8_t r = (bbb & 0xF8) >> 3;
-			    uint8_t c = bbb & 0x07;
 
 				PushDbgLog("(%i|%i)", c, Pad2Seq(r));
 
-				if (PushGetStep(p, c, Pad2Seq(r))) {
-					PushDisableStep(p, c, Pad2Seq(r));
-					PushSetPad(p, r, c, PAD_OFF_CLR);
+				if (PushSeqGetStepVelocity(p, 7-r, c)) {
+				//	PushSeqClrStep(p, 7-r, c);
+					PushSeqSetStep(p, 7-r, c, 0);
 				} else {
-					PushEnableStep(p, c, Pad2Seq(r));
-					PushSetPad(p, r, c, PAD_UP_CLR);
-
+					PushSeqSetStep(p, 7-r, c, velocity);
+				}
+				PushSeqDrawSteps(p);
+				PushUpdatePads(p);
 			}
-
-
-
-			}
-
-
-
                 } else if (p._mode==Push_DeviceMode && data1>=NOTE_ENCODER_START && data1<=NOTE_ENCODER_END) {
                     PushHandleDevice(p, status, data1, data2);
                 }
@@ -220,35 +215,6 @@ void PushControlRateHandler(Push& p) {
     }
 }
 
-// For these: seqNr 0..7 / stepNr 0..7
-void PushEnableStep(Push& p, uint8_t stepNr, uint8_t seqNr)
-{
-	p.sequencer[seqNr] |= (1 << stepNr);
-	PushDbgLog("en: %02X", p.sequencer[seqNr]);
-}
-
-void PushDisableStep(Push& p, uint8_t stepNr, uint8_t seqNr)
-{
-	p.sequencer[seqNr] &= ~(1 << stepNr);
-	PushDbgLog("dis: %02X", p.sequencer[seqNr]);
-}
-
-bool PushGetStep(Push& p, uint8_t stepNr, uint8_t seqNr)
-{
-	return (p.sequencer[seqNr] & (1 << stepNr));
-}
-
-bool PushToggleStep(Push& p, uint8_t stepNr, uint8_t seqNr)
-{
-	if (PushGetStep(p, stepNr, seqNr)) {
-		PushDisableStep(p, stepNr, seqNr);
-		return false;
-	}
-
-	PushEnableStep(p, stepNr, seqNr);
-	return true;
-}
-
 void PushSeqTickHandler(Push& p)
 {
 	for (uint8_t i=0; i<16; i++) {
@@ -258,84 +224,77 @@ void PushSeqTickHandler(Push& p)
 		if (p.sequencer[i].clk_24ppq_cnt % p.sequencer[i].ticks_per_step == 0) {
 			p.sequencer[i].last_step = p.sequencer[i].step;
 			p.sequencer[i].step++;
-			p.sequencer[i].step %= step_cnt;
+			p.sequencer[i].step %= p.sequencer[i].step_cnt;
 		}
 	}
 }
 
+void PushSeqDrawSteps(Push& p)
+{
+	for (uint8_t step=0; step<8; step++) {
+		for (uint8_t seq=0; seq<8; seq++) {
+			if (PushSeqGetStepVelocity(p, seq, step)) {
+				PushSetPad(p, 7-seq, step, 15);
+			}
+		}
+	}
+
+}
+
+void PushSeqClrStep(Push& p, uint8_t seq, uint8_t step)
+{
+	p.sequencer[seq].velocity[step] = 0;
+}
+
 void PushSeqSetStep(Push& p, uint8_t seq, uint8_t step, uint8_t velocity)
 {
-	p.sequence[seq].velocity[step] = velocity;
+	p.sequencer[seq].velocity[step] = velocity;
 }
 
 // Returns velocity
 uint8_t PushSeqGetStepVelocity(Push& p, uint8_t seq, uint8_t step)
 {
-	return p.sequence[seq].velocity[step];
+	return p.sequencer[seq].velocity[step];
 }
 
 void PushClockTrigger(Push& p)
 {
 	if (!p.running || p._padMode != Push_SequencerMode) return;
 
-	bool is_16th = (p.clk_24ppq % 6 == 0);
-	bool is_4th = (p.clk_24ppq % 24 == 0);
-
-	p.clk_24ppq++;
-	p.clk_24ppq %= 96; // Reset each beat
-
-	if (p.clk_24ppq % (96 / p.stepsize) == 0) {
-		p.lastStep = p.step;
-		p.step++;
-		p.step %= 8;
-
-		uint8_t onColor, offColor = 0;
-
-		for (uint8_t i=0; i<8; i++) {
-			if (PushGetStep(p, p.lastStep, i)) {
-				onColor = p.color;
-				offColor = 30;
-			} else {
-				onColor = p.color;
-				offColor = 0;
-			}
-			PushSetPad(p, Seq2Pad(i), Step2Pad(p.step), onColor);
-			PushSetPad(p, Seq2Pad(i), Step2Pad(p.lastStep), offColor);
-		}
-		PushUpdatePads(p);
-	}
+	PushSeqTickHandler(p);
+	PushUpdatePads(p);
 }
 
 void PushStartTrigger(Push& p)
 {
 	PushDbgLog("Start...");
 	p.running = true;
+	PushSeqInit(p);
 }
 
 void PushStopTrigger(Push& p)
 {
 	PushDbgLog("Stop...");
-	p.clk_24ppq = 0;
-	p.clk_1ppq = 0;
-	p.step = 0;
 	p.running = false;
 	PushClearPads(p);
-	PushDrawSteps(p);
 	PushUpdatePads(p);
 }
 
-
-bool PushDrawSteps(Push& p)
+void PushSeqInit(Push& p)
 {
-	for (uint8_t x=0; x<8; x++) {
-		for (uint8_t y=0; y<8; y++) {
-			if (PushGetStep(p, x, y)) {
-				PushSetPad(p, Seq2Pad(y), Step2Pad(x), p.color);
-			}
+	for (uint8_t seq=0; seq<8; seq++) {
+		p.sequencer[seq].clk_24ppq_cnt = 0;
+		p.sequencer[seq].step_cnt = 8;
+		p.sequencer[seq].swing = 0;
+		p.sequencer[seq].ticks_per_step = 6;
+		p.sequencer[seq].step = 0;
+		p.sequencer[seq].last_step = 0;
+		p.sequencer[seq].note = 0x20;
+		for (uint8_t step=0; step<64; step++) {
+			p.sequencer[seq].velocity[step] = 0;
 		}
 	}
 }
-
 
 void PushSetColor(Push& p, uint8_t c) {
 	p.color = c;

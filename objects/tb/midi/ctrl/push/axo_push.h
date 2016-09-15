@@ -104,19 +104,9 @@ struct Push {
 
 
 
-    //sequencer
     bool running;
-    uint8_t clk_24ppq;
-    uint8_t clk_1ppq;
-    uint8_t sequencer[8];
-    uint8_t stepsize;
-    uint8_t step;
-    uint8_t lastStep;
-    uint8_t color;
+   uint8_t color;
 };
-
-
-
 
 
 // CCS/Notes received

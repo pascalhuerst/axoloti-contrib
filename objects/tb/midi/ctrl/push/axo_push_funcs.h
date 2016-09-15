@@ -50,11 +50,9 @@
     void PushStartTrigger(Push& p) PFX;
     void PushStopTrigger(Push& p) PFX;
 
-    void PushEnableStep(Push& p, uint8_t stepNr, uint8_t seqNr);
-    void PushDisableStep(Push& p, uint8_t stepNr, uint8_t seqNr);
-    bool PushGetStep(Push& p, uint8_t stepNr, uint8_t seqNr);
-    bool PushToggleStep(Push& p, uint8_t stepNr, uint8_t seqNr);
-    bool PushDrawSteps(Push& p);
-    void PushSetColor(Push& p, uint8_t c);
-
-
+void PushSeqTickHandler(Push& p);
+void PushSeqDrawSteps(Push& p);
+void PushSeqClrStep(Push& p, uint8_t seq, uint8_t step);
+void PushSeqSetStep(Push& p, uint8_t seq, uint8_t step, uint8_t velocity);
+uint8_t PushSeqGetStepVelocity(Push& p, uint8_t seq, uint8_t step);
+void PushSeqInit(Push& p);
