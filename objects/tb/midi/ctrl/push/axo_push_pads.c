@@ -1,4 +1,7 @@
-
+#ifndef NOT_QT_CREATOR
+#include "axo_push.h"
+#include <stdint.h>
+#endif
 
 void PushInitPads(Push& p) {
     for(int r=0;r<8;r++) {
@@ -11,17 +14,19 @@ void PushInitPads(Push& p) {
 
 
 void PushClearUpperPads(Push& p) {
-    for(int i=CC_UPPER_PAD_START; i <= CC_UPPER_PAD_END;i++) {
+	/*
+	for(int i=CC_UPPER_PAD_START; i <= CC_UPPER_PAD_END;i++) {
         MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,i,PAD_NOTE_OFF_CLR);
     }
-
+	*/
 }
 
 void PushClearLowerPads(Push& p) {
-    for(int i=CC_LOWER_PAD_START; i <= CC_LOWER_PAD_END;i++) {
+	/*
+	for(int i=CC_LOWER_PAD_START; i <= CC_LOWER_PAD_END;i++) {
         MidiSend3(p._out_dev,p._out_port,MIDI_CONTROL_CHANGE,i,PAD_NOTE_OFF_CLR);
     }
-
+	*/
 }
 
 void PushSetPad(Push& p, uint8_t r, uint8_t c ,uint8_t colour) {
@@ -29,6 +34,16 @@ void PushSetPad(Push& p, uint8_t r, uint8_t c ,uint8_t colour) {
 
     p._pads[r][c] = colour;
     p._dirtyPads[r] = p._dirtyPads[r] | (1 << c);
+}
+
+void PushSetUpperButton(Push& p, uint8_t i, ButtonColor col)
+{
+	//MidiSend3(p._out_dev, p._out_port, MIDI_CONTROL_CHANGE, CC_UPPER_PAD_START+i, col);
+}
+
+void PushSetLowerButton(Push& p, uint8_t i, ButtonColor col)
+{
+	//MidiSend3(p._out_dev, p._out_port, MIDI_CONTROL_CHANGE, CC_LOWER_PAD_START+i, col);
 }
 
 void PushClearPads(Push& p){

@@ -27,12 +27,12 @@
     void PushInitHandler(Push& p) PFX;
     void PushInitLed(Push& p) PFX;
     void PushInitPads(Push& p) PFX;
-    void PushInitSession(Push& p) PFX;
+
     void PushLockLed(Push& p, bool lock) PFX;
     void PushLockLedRow(Push& p, uint8_t r,bool lock) PFX;
     void PushMidiInMsgHandler(Push& p,midi_device_t dev, uint8_t port, uint8_t b0, uint8_t b1, uint8_t b2) PFX;
     void PushNoteOutput(Push& p,midi_device_t d,int port) PFX;
-    int PushNumNotesInScale(int16_t scale) PFX;
+
     uint8_t PushNumParamObjects(KeyValuePair_s* obj) PFX;
     uint8_t PushNumSeqObjects(KeyValuePair_s* obj) PFX;
     void PushParamBar(Push& p, uint8_t c, KeyValuePair_s* kvp) PFX;
@@ -41,6 +41,8 @@
     void PushSetBlock(Push& p,uint8_t r, uint8_t b, const char* txt, uint8_t len) PFX;
     void PushSetCell(Push& p,uint8_t r, uint8_t c, const char* txt, uint8_t len) PFX;
     void PushSetPad(Push& p, uint8_t r, uint8_t c ,uint8_t colour) PFX;
+    void PushSetUpperButton(Push& p, uint8_t i, ButtonColor col) PFX;
+    void PushSetLowerButton(Push& p, uint8_t i, ButtonColor col) PFX;
     void PushSetRow(Push& p,uint8_t r, const char* txt, uint8_t len) PFX;
     void PushUnipolarBar(Push& p, uint8_t r, uint8_t c, uint8_t v) PFX;
     void PushUpdateLed(Push& p) PFX;
@@ -51,7 +53,8 @@
     void PushStopTrigger(Push& p) PFX;
 
 void PushSeqTickHandler(Push& p);
-void PushSeqDrawSteps(Push& p);
+void PushSeqUpdateStep(Push& p, uint8_t seqNr);
+void PushSeqDrawSteps(Push& p, uint8_t seqNr);
 void PushSeqClrStep(Push& p, uint8_t seq, uint8_t step);
 void PushSeqSetStep(Push& p, uint8_t seq, uint8_t step, uint8_t velocity);
 uint8_t PushSeqGetStepVelocity(Push& p, uint8_t seq, uint8_t step);

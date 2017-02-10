@@ -1,3 +1,7 @@
+#ifndef NOT_QT_CREATOR
+#include "axo_push.h"
+#include <stdint.h>
+#endif
 
 #include <os/various/chprintf.h>
 
@@ -34,55 +38,10 @@ KeyValuePair_s* PushGetParamObject(KeyValuePair_s* obj,uint8_t idx) {
 
 
 void PushHandleDevice(Push& p, uint8_t status, uint8_t data1,uint8_t data2)  {
-    if(status == MIDI_CONTROL_CHANGE) {
-        switch(data1) {
-            case CC_DEVICE: {
-                PushClearUpperPads(p);
-                PushClearLowerPads(p);
-                PushDisplayParams(p,ObjectKvpRoot);
-                break;
-            }
-            case CC_IN: {
-                if(p._mode == Push_DeviceMode) {
-                    uint8_t numobjs = PushNumParamObjects(ObjectKvpRoot);
-                    if(p._deviceParamPos + 8 < numobjs) {
-                        p._deviceParamPos += 8;
-                        PushDisplayParams(p,ObjectKvpRoot);
-                    }
-                }
-                break;
-            }
-            case CC_OUT: {
-                if(p._mode == Push_DeviceMode) {
-                    if(p._deviceParamPos - 8 >= 0) {
-                        p._deviceParamPos -= 8;
-                        PushDisplayParams(p,ObjectKvpRoot);
-                    } else {
-                        p._deviceParamPos = 0;
-                        PushDisplayParams(p,ObjectKvpRoot);
-                    }
-                }
-                break;
-            }
-            default: {
-                if(data1>=CC_ENCODER_START && data1<=CC_ENCODER_END) {
-                    uint8_t enc=data1-CC_ENCODER_START;
-                    int8_t  vel = 0;
-                    if (data2 & 0x40) {
-                        // -ve
-                        vel =  (128 - data2) * -1;
-                    } else {
-                        vel = data2;
-                    }
-                    if (enc==8)  {
-                        // master encoder , volume etc
-                    } else {
-                        // normal encode
-                        PushUpdateParamValue(p, ObjectKvpRoot, enc, vel);
-                    }
-                }
-            }
-        }// switch
+#if 0
+
+	if(status == MIDI_CONTROL_CHANGE) {
+
     } else if (status == MIDI_NOTE_ON || status == MIDI_NOTE_OFF) {
         data2 = (status == MIDI_NOTE_ON ? data2 : 0); // convert  NOTE_OFF
         if (data2>0) {
@@ -102,6 +61,7 @@ void PushHandleDevice(Push& p, uint8_t status, uint8_t data1,uint8_t data2)  {
             PushClearRow(p,2);
         }
     }
+#endif
 }
 
 

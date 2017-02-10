@@ -19,26 +19,131 @@ extern void LogTextMessage(const char* format, ...);
 #define LED_BLOCKS 4
 #define LED_CELLS 2 * LED_BLOCKS
 
-#define Step2Pad(x) (x)
-#define Seq2Pad(x) (7-x)
-#define Pad2Seq(x) (7-x)
+// Right of Pads
+#define BTN_1_4 	0x24
+#define BTN_1_4t 	0x25
+#define BTN_1_8		0x26
+#define BTN_1_8t	0x27
+#define BTN_1_16	0x28
+#define BTN_1_16t	0x29
+#define BTN_1_32	0x2A
+#define BTN_1_32t	0x2B
+#define IS_GRID(x)	(x >= BTN_1_4 && x <= BTN_1_32t)
 
-typedef enum {
-    Push_DeviceMode,
-    Push_VolumeMode,
-    Push_ScaleMode,
-    Push_BrowseMode,
-    Push_SessionMode
-} PushMainMode;
-
-typedef enum {
-    Push_PlayMode,
-    Push_SequencerMode
-} PushPadMode;
+// Stop and Master
+#define BTN_STOP	0x1D
+#define BTN_MASTER	0x1C
 
 
+// Right Function Lower Buttons
+#define BTN_VOLUME	0x72
+#define BTN_TRACK	0x70
+#define BTN_DEVICE	0x6E
+#define BTN_PAN_SEND	0x73
+#define BTN_CLIP	0x71
+#define BTN_BROWSE	0x6F
+
+// Right Function Middle Buttons
+#define BTN_ENTER		0x3E
+#define BTN_ENTER_INV		0x3F
+#define BTN_MUTE		0x3C
+#define BTN_SOLO		0x3D
+#define BTN_SCALES		0x3A
+#define BTN_USER		0x3B
+#define BTN_REPEAT		0x38
+#define BTN_ACCENT		0x39
+#define BTN_OCTAVE_DOWN		0x36
+#define BTN_OCTAVE_UP		0x37
+
+// Right Function Lower Buttons
+#define BTN_ADD_EFFECT		0x34
+#define BTN_ADD_TRACK		0x35
+#define BTN_NOTE		0x32
+#define BTN_SESSION		0x33
+#define BTN_SELECT		0x30
+#define BTN_SHIFT		0x31
 
 
+// Right Function Arrows
+#define BTN_UP			0x2E
+#define BTN_LEFT		0x2C
+#define BTN_DOWN		0x2F
+#define BTN_RIGHT		0x2D
+#define IS_ARROW(x)		(x >= BTN_LEFT && x <= BTN_DOWN)
+
+// Left Function Buttons
+#define BTN_UNDO		0x77
+#define BTN_DELETE		0x76
+#define BTN_DOUBLE		0x75
+#define BTN_QUANTIZE		0x74
+#define BTN_FIXEDLENGTH		0x5A
+#define BTN_AUTOMATION		0x59
+#define BTN_DUPLICATE		0x58
+#define BTN_NEW			0x57
+#define BTN_RECORD		0x56
+#define BTN_PLAY		0x55
+#define BTN_TEMPO_TAB		0x03
+#define BTN_METRONOME		0x09
+
+// Left Encoders
+#define ENC_SMALL_1		0x0E
+#define ENC_SMALL_2		0x0F
+#define IS_SMALL_ENC(x)		(x == ENC_SMALL_1 || x == ENC_SMALL_2)
+
+// Top Encoders
+#define ENC_1			0x47
+#define ENC_2			0x48
+#define ENC_3			0x49
+#define ENC_4			0x4A
+#define ENC_5			0x4B
+#define ENC_6			0x4C
+#define ENC_7			0x4D
+#define ENC_8			0x4E
+#define ENC_9			0x4F
+#define ENC_FIRST		ENC_1
+#define ENC_LAST		ENC_9
+#define IS_ENC(x)		(x >= ENC_FIRST && x <= ENC_LAST)
+
+// Upper Function Buttons
+#define BTN_UPPER_1		0x14
+#define BTN_UPPER_2		0x15
+#define BTN_UPPER_3		0x16
+#define BTN_UPPER_4		0x17
+#define BTN_UPPER_5		0x18
+#define BTN_UPPER_6		0x19
+#define BTN_UPPER_7		0x1A
+#define BTN_UPPER_8		0x1B
+#define BTN_UPPER_FIRST		BTN_UPPER_1
+#define BTN_UPPER_LAST		BTN_UPPER_8
+#define IS_UPPER_BTN(x)		(x >= BTN_UPPER_FIRST && x <= BTN_UPPER_LAST)
+
+// Lower Function Buttons
+#define BTN_LOWER_1		0x66
+#define BTN_LOWER_2		0x67
+#define BTN_LOWER_3		0x68
+#define BTN_LOWER_4		0x69
+#define BTN_LOWER_5		0x6A
+#define BTN_LOWER_6		0x6B
+#define BTN_LOWER_7		0x6C
+#define BTN_LOWER_8		0x6D
+#define BTN_LOWER_FIRST		BTN_LOWER_1
+#define BTN_LOWER_LAST		BTN_LOWER_8
+#define IS_LOWER_BTN(x)		(x >= BTN_LOWER_FIRST && x <= BTN_LOWER_LAST)
+
+// PADS
+#define NOTE_PAD_START 36
+#define NOTE_PAD_END  (NOTE_PAD_START + 64)
+
+
+
+
+
+
+
+
+
+
+struct Push;
 
 struct SeqParams {
 	uint8_t velocity[64];	// 0: Step off, others velocity
@@ -51,11 +156,38 @@ struct SeqParams {
 	uint8_t note;		// Note value thats sent on trigger
 };
 
+enum ButtonColor {
+	Off = 0,
+	RedDark = 1,
+	RedDarkSlow,
+	RedDarkFast,
+	RedBright,
+	RedBrightSlow,
+	RedBrightFast,
+	OrangeDark,
+	OrangeDarkSlow,
+	OrangeDarkFast,
+	OrangeBright,
+	OrangeBrightSlow,
+	OrangeBrightFast,
+	YellowDark,
+	YellowDarkSlow,
+	YellowDarkFast,
+	YellowBright,
+	YellowBrightSlow,
+	YellowBrightFast,
+	GreenBright,
+	GreenBrightSlow,
+	GreenBrightFast
+};
+
+enum StepColor {
+	StepActive = 15,
+	StepSet = 10,
+	StepUnset = 2
+};
 
 struct Push {
-    PushMainMode _mode;
-    PushPadMode  _padMode;
-
 
     // play mode
     uint8_t  _octave;    // current octave
@@ -101,74 +233,13 @@ struct Push {
 
     // Seq. V2
     SeqParams sequencer[8];
-
+    uint8_t selectedSeq;
 
 
     bool running;
    uint8_t color;
 };
 
-
-// CCS/Notes received
-
-#define NOTE_ENCODER_START 0
-#define NOTE_ENCODER_END (NOTE_ENCODER_START + 8)
-
-#define NOTE_PAD_START 36
-#define NOTE_PAD_END  (NOTE_PAD_START + 64)
-
-#define CC_IN 62
-#define CC_OUT 63
-#define CC_SELECT 48
-#define CC_SHIFT  49
-
-#define CC_NOTE     50
-#define CC_SESSION  51
-
-// buttons
-#define CC_VOLUME   114
-#define CC_PAN_SEND 115
-#define CC_TRACK    112
-#define CC_CLIP     113
-#define CC_DEVICE   110
-#define CC_BROWSE   111
-
-#define CC_SCALE 58
-#define CC_USER 59
-#define CC_OCT_DOWN 54
-#define CC_OCT_UP 55
-
-#define CC_CURSOR_LEFT 44
-#define CC_CURSOR_RIGHT 45
-#define CC_CURSOR_UP 46
-#define CC_CURSOR_DOWN 47
-
-#define CC_PLAY     85
-#define CC_RECORD   86
-#define CC_NEW      87
-
-#define CC_ENCODER_START 71
-#define CC_ENCODER_END (CC_ENCODER_START + 8)
-
-#define CC_UPPER_PAD_START 20
-#define CC_UPPER_PAD_END  (CC_UPPER_PAD_START + 7)
-#define CC_LOWER_PAD_START 102
-#define CC_LOWER_PAD_END  (CC_LOWER_PAD_START + 7)
-
-
-// colours
-
-// care as top row is bicolour, lower is pad colour!
-#define PAD_OFF_CLR 0
-#define PAD_UP_CLR 16
-#define PAD_DOWN_CLR 13
-#define PAD_ACTION_CLR 19
-
-// PAD colours
-#define PAD_NOTE_ON_CLR 127
-#define PAD_NOTE_OFF_CLR 0
-#define PAD_NOTE_ROOT_CLR 41
-#define PAD_NOTE_IN_KEY_CLR 3
 
 
 static const char* SEQSTR = "KVP_instance";
@@ -185,16 +256,11 @@ extern struct KeyValuePair *ObjectKvps[];
 // ctags -x --c-kinds=f *.c | awk '{$1=$2=$3=$4="";print $0}' | sed 's/{/PFX;/' > axo_push_funcs.h
 #include "./axo_push_funcs.h"
 
-#include "./axo_push_scale.h"
 
 #include "./axo_push.c"
-#include "./axo_push_scale.c"
 #include "./axo_push_led.c"
 #include "./axo_push_handler.c"
 #include "./axo_push_params.c"
 #include "./axo_push_pads.c"
-#include "./axo_push_browse.c"
-#include "./axo_push_play.c"
-#include "./axo_push_session.c"
 
 #endif //AXO_PUSH_H
